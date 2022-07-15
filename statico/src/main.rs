@@ -1,4 +1,6 @@
 use comrak::{markdown_to_html, ComrakOptions};
+use handlebars::Handlebars;
+use serde_json::json;
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -21,7 +23,7 @@ fn main() {
 
     match fs::create_dir_all(out_directory.clone()) {
         Ok(()) => {
-            println!("Created output directory!");
+            println!("created output directory!");
         }
         Err(e) => {
             eprintln!("failed to create directory: {}, {}", out_directory, e);
@@ -29,9 +31,27 @@ fn main() {
         }
     }
 
+    let tmpls = read_templates("./templates".to_string());
+
     for file in files {
-        process_file(file.clone(), &out_directory).unwrap();
+        process_file(file.clone(), &out_directory, &tmpls).unwrap();
     }
+}
+
+fn read_templates<'reg>(path: String) -> Handlebars<'reg> {
+    let mut reg = Handlebars::new();
+
+    let page_template = Path::new(&path).join("page.handlebars".clone());
+
+    for file in fs::read_dir(path).unwrap() {
+        if file.as_ref().unwrap().path() == page_template {
+            let contents = fs::read_to_string(file.as_ref().unwrap().path());
+            reg.register_template_string("page_tpl", contents.as_ref().unwrap())
+                .unwrap();
+        }
+    }
+
+    return reg;
 }
 
 fn files_to_process(path: String) -> Vec<String> {
@@ -42,7 +62,7 @@ fn files_to_process(path: String) -> Vec<String> {
     return files;
 }
 
-fn process_file(path: String, out_directory: &str) -> std::io::Result<()> {
+fn process_file(path: String, out_directory: &str, tmpls: &Handlebars) -> std::io::Result<()> {
     let contents = fs::read_to_string(&path).expect("Something went wrong reading the file");
 
     let mut filename = PathBuf::from(Path::new(&path).file_name().unwrap());
@@ -54,7 +74,15 @@ fn process_file(path: String, out_directory: &str) -> std::io::Result<()> {
 
     let mut f = File::create(outfile_path).expect("Failed to create the output file");
 
-    f.write_all(markdown_to_html(&contents, &ComrakOptions::default()).as_bytes())?;
+    let mut processed_content = markdown_to_html(&contents, &ComrakOptions::default());
+    processed_content = tmpls
+        .render(
+            "page_tpl",
+            &json!({"content":processed_content.to_string()}),
+        )
+        .unwrap();
+
+    f.write_all(processed_content.as_bytes())?;
 
     f.sync_data()?;
 
