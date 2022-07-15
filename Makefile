@@ -1,6 +1,9 @@
 
 .PHONY: build
 
+run: 
+	cargo run --manifest-path=./statico/Cargo.toml ./content ./dist
+
 build:
 	cargo build --manifest-path=./statico/Cargo.toml --release
 	mkdir -p ./bin
