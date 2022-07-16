@@ -14,7 +14,10 @@ let
 
 in pkgs.mkShell {
   nativeBuildInputs = [
-      pkgs.libiconv pkgs.openssl pkgs.rustc pkgs.cargo pkgs.gcc ];
+      pkgs.libiconv pkgs.openssl pkgs.rustup pkgs.gcc ];
+  shellHook=''
+  rustup install stable
+  '';
   buildInputs = with pkgs; [ rustfmt clippy ];
   RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
 }
