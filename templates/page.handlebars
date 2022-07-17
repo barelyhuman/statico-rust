@@ -1,9 +1,48 @@
 <html>
 
-  <head></head>
+  <head>
+    <!-- Primary Meta Tags -->
+    <title>Statico Demo</title>
+    <meta name="title" content="Statico Demo" />
+    <meta name="description" content="With statico, you can't really do much" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://metatags.io/" />
+    <meta property="og:title" content="Statico Demo" />
+    <meta
+      property="og:description"
+      content="With statico, you can't really do much"
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://metatags.io/" />
+    <meta property="twitter:title" content="Statico Demo" />
+    <meta
+      property="twitter:description"
+      content="With statico, you can't really do much"
+    />
+
+    <link rel="stylesheet" href="https://rsms.me/raster/raster2.css?v=20" />
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/default.min.css"
+    />
+
+    <style>
+      :root{ --fontSize:14px; } body{ max-width: 100ch; margin:0 auto;
+      padding:10px; }
+    </style>
+
+  </head>
 
   <body>
     {{{content}}}
+    <script
+      src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"
+    ></script>
+    <script>hljs.highlightAll();</script>
   </body>
 
 </html>

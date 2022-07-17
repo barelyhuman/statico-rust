@@ -74,7 +74,18 @@ fn process_file(path: String, out_directory: &str, tmpls: &Handlebars) -> std::i
 
     let mut f = File::create(outfile_path).expect("Failed to create the output file");
 
-    let mut processed_content = markdown_to_html(&contents, &ComrakOptions::default());
+    let mut options = ComrakOptions::default();
+    
+    options.extension.strikethrough=true;
+    options.extension.tagfilter=true;
+    options.extension.table=true;
+    options.extension.autolink=true;
+    options.extension.tasklist=true;
+    options.extension.superscript=true;
+    options.extension.footnotes=true;
+
+
+    let mut processed_content = markdown_to_html(&contents, &options);
     processed_content = tmpls
         .render(
             "page_tpl",
