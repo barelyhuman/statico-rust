@@ -17,6 +17,10 @@ run:
 dockerbuild:
 	docker run --rm -it -v `pwd`:/io -w /io messense/cargo-zigbuild make crossbuild
 
+build:
+	make dockerbuild
+	make build-mac
+
 build-mac:
 	cargo zigbuild --target="${MAC_TARGET}" --release --manifest-path="./statico/Cargo.toml"
 	cp ./statico/target/${MAC_TARGET}/release/statico ./bin/statico-${MAC_TARGET}
