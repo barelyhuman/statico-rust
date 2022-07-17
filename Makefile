@@ -2,51 +2,43 @@
 .PHONY: build
 
 GNU_LINUX_TARGET="x86_64-unknown-linux-gnu"
+GNU_LINUX_ARM="aarch64-unknown-linux-gnu"
 MUSL_LINUX_TARGET="x86_64-unknown-linux-musl"
+MAC_ARM_TARGET="aarch64-apple-darwin"
+MAC_TARGET="x86_64-apple-darwin"
+
+clean:
+	rm -rf ./statico/target
+	rm -rf ./bin
 
 run: 
 	cargo run --manifest-path=./statico/Cargo.toml ./content ./dist
 
-image:
-	docker build -t 'rustcross:latest' - < Debian.Dockerfile 
+dockerbuild:
+	docker run --rm -it -v `pwd`:/io -w /io messense/cargo-zigbuild make crossbuild
 
-amazon-image:
-	docker build -t 'rustcross-amazon:latest' - < Amazon.Dockerfile 
+build-mac:
+	cargo zigbuild --target="${MAC_TARGET}" --release --manifest-path="./statico/Cargo.toml"
+	cp ./statico/target/${MAC_TARGET}/release/statico ./bin/statico-${MAC_TARGET}
 
-run-image: image
-	docker run -it --rm -v `pwd`:/usr/local/src rustcross:latest
+	cargo zigbuild --target="${MAC_ARM_TARGET}" --release --manifest-path="./statico/Cargo.toml"
+	cp ./statico/target/${MAC_ARM_TARGET}/release/statico ./bin/statico-${MAC_ARM_TARGET}
 
-crossbuild-linux-gnu:
+crossbuild: clean 
+	mkdir -p ./bin
 	rustup target add "${GNU_LINUX_TARGET}"
-	RUSTFLAGS='-C linker=x86_64-linux-gnu-gcc' cargo build --manifest-path=./statico/Cargo.toml --release --target="${GNU_LINUX_TARGET}"
-	mkdir -p ./bin
-	cp "./statico/target/${GNU_LINUX_TARGET}/release/statico" "./bin/statico-${GNU_LINUX_TARGET}"
+	rustup target add "${GNU_LINUX_ARM}"
 
-crossbuild-linux-musl:
-	rustup target add "${MUSL_LINUX_TARGET}"
-	RUSTFLAGS='-C linker=x86_64-linux-gnu-gcc' cargo build --manifest-path=./statico/Cargo.toml --release --target="${MUSL_LINUX_TARGET}"
-	mkdir -p ./bin
-	cp "./statico/target/${MUSL_LINUX_TARGET}/release/statico" "./bin/statico-${MUSL_LINUX_TARGET}"
+	cargo zigbuild --target="${GNU_LINUX_TARGET}" --release --manifest-path="./statico/Cargo.toml"
+	cp ./statico/target/${GNU_LINUX_TARGET}/release/statico ./bin/statico-${GNU_LINUX_TARGET}
 
-crossbuild-amazon-linux: amazon-image
-	docker run -it --rm -v `pwd`:/usr/local/src rustcross-amazon:latest  /bin/bash -c "cd /usr/local/src;make build-amazon"
+	cargo zigbuild --target="${GNU_LINUX_TARGET}.2.17" --release --manifest-path="./statico/Cargo.toml"
+	cp ./statico/target/${GNU_LINUX_TARGET}/release/statico ./bin/statico-${GNU_LINUX_TARGET}-libc217
 
-crossbuild: build-mac image
-	docker run -it --rm -v `pwd`:/usr/local/src rustcross:latest bash -c "cd /usr/local/src; make crossbuild-linux-gnu"
-	make crossbuild-amazon-linux
+	cargo zigbuild --target="${GNU_LINUX_ARM}" --release --manifest-path="./statico/Cargo.toml"
+	cp ./statico/target/${GNU_LINUX_ARM}/release/statico ./bin/statico-${GNU_LINUX_ARM}
 
-build:
-	cargo build --manifest-path=./statico/Cargo.toml --release
-	mkdir -p ./bin
-	cp ./statico/target/release/statico ./bin/statico-native
-
-build-amazon: build
-	mv ./bin/statico-native ./bin/statico-amazon-linux
-
-build-mac: build
-	mv ./bin/statico-native ./bin/statico-mac
-
-clean:
-	rm -rf ./statico/target
+	cargo zigbuild --target="${GNU_LINUX_ARM}.2.17" --release --manifest-path="./statico/Cargo.toml"
+	cp ./statico/target/${GNU_LINUX_ARM}/release/statico ./bin/statico-${GNU_LINUX_ARM}-libc217
 
 

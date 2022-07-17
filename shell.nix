@@ -17,6 +17,7 @@ in pkgs.mkShell {
       pkgs.libiconv pkgs.openssl pkgs.rustup pkgs.gcc ];
   shellHook=''
   rustup install stable
+  cargo install cargo-zigbuild
   '';
   buildInputs = with pkgs; [ rustfmt clippy ];
   RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
